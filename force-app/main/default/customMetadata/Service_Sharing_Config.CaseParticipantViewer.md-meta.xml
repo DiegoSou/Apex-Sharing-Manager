@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomMetadata xmlns="http://soap.sforce.com/2006/04/metadata" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+    <label>Case Participant - Viewer</label>
+    <protected>false</protected>
+    <values>
+        <field>EvaluationFormula__c</field>
+        <value xsi:type="xsd:string">AND(
+  NOT(
+    ISBLANK(Id)
+  )
+)</value>
+    </values>
+    <values>
+        <field>HandlerClassName__c</field>
+        <value xsi:type="xsd:string">CaseParticipantViewerSharingService</value>
+    </values>
+    <values>
+        <field>IsActive__c</field>
+        <value xsi:type="xsd:boolean">true</value>
+    </values>
+    <values>
+        <field>SObjectAPIName__c</field>
+        <value xsi:type="xsd:string">CaseParticipant__c</value>
+    </values>
+</CustomMetadata>
