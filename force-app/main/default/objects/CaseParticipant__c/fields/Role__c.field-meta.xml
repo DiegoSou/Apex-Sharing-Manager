@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Role__c</fullName>
+    <defaultValue>&apos;Viewer&apos;</defaultValue>
+    <description>Defines the participant&apos;s responsibility and access level for the related Case (e.g., Manager, Editor, Viewer). This value is evaluated by the sharing engine to determine if the user receives Read or Read/Write access</description>
+    <inlineHelpText>Defines the participant&apos;s responsibility and access level for the related Case (e.g., Manager, Editor, Viewer). This value is evaluated by the sharing engine to determine if the user receives Read or Read/Write access</inlineHelpText>
+    <label>Role</label>
+    <required>false</required>
+    <trackTrending>false</trackTrending>
+    <type>Picklist</type>
+    <valueSet>
+        <restricted>true</restricted>
+        <valueSetDefinition>
+            <sorted>false</sorted>
+            <value>
+                <fullName>Viewer</fullName>
+                <default>false</default>
+                <label>Viewer</label>
+            </value>
+            <value>
+                <fullName>Editor</fullName>
+                <default>false</default>
+                <label>Editor</label>
+            </value>
+            <value>
+                <fullName>Manager</fullName>
+                <default>false</default>
+                <label>Manager</label>
+            </value>
+        </valueSetDefinition>
+    </valueSet>
+</CustomField>

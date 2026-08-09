@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Case__c</fullName>
+    <description>The Case associated with this participant. The sharing engine uses this reference to create or update the appropriate sharing records (CaseShare) for the target Case</description>
+    <inlineHelpText>The Case associated with this participant. The sharing engine uses this reference to create or update the appropriate sharing records (CaseShare) for the target Case</inlineHelpText>
+    <label>Case</label>
+    <referenceTo>Case</referenceTo>
+    <relationshipLabel>Case Participants</relationshipLabel>
+    <relationshipName>CaseParticipants</relationshipName>
+    <relationshipOrder>0</relationshipOrder>
+    <reparentableMasterDetail>false</reparentableMasterDetail>
+    <trackTrending>false</trackTrending>
+    <type>MasterDetail</type>
+    <writeRequiresMasterRead>false</writeRequiresMasterRead>
+</CustomField>
