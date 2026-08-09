@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ValidationRule xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>FormulaIsRequiredForActiveRules</fullName>
+    <active>true</active>
+    <errorConditionFormula>AND(
+    IsActive__c = true,
+    OR(
+        ISBLANK(EvaluationFormula__c),
+        LEN(EvaluationFormula__c) = 0
+    )
+)</errorConditionFormula>
+    <errorDisplayField>EvaluationFormula__c</errorDisplayField>
+    <errorMessage>An active sharing configuration must have an Evaluation Formula to specify which records should be shared.</errorMessage>
+</ValidationRule>
