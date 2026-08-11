@@ -8,7 +8,7 @@ public inherited sharing class RecordSharingService {
     /**
      * Método principal que recebe SObjects e faz o roteamento
      */
-    public static void processSharing(List<SObject> records) {
+    public static void routeToSharingConfigs(List<SObject> records) {
         if (records == null || records.isEmpty()) return;
 
         // 1. Agrupar os registros por SObjectType
