@@ -2,13 +2,15 @@ public inherited sharing class RecordSharingService {
     
     // Interface comum entre as handlers
     public interface ISharingHandler {
-        void executeSharing(List<SObject> records);
+        void executeSharing(List<SObject> records, String operationType);
     }
 
     /**
      * Método principal que recebe SObjects e faz o roteamento
+     * @param records Lista de registros que foram atualizados e devem ser enviados para o serviço de compartilhamento.
+     * @param operationType Opcional. Serve para o serviço de compartilhamento saber qual operação deve fazer: 'INSERT', 'UPDATE', 'DELETE', etc, ou um valor personalizado que a service reconheça.
      */
-    public static void processSharing(List<SObject> records) {
+    public static void routeToSharingConfigs(List<SObject> records, String operationType) {
         if (records == null || records.isEmpty()) return;
 
         // 1. Agrupar os registros por SObjectType
@@ -64,7 +66,7 @@ public inherited sharing class RecordSharingService {
             // 4. Instanciar as classes que fazem o compartilhamento
             // Fica a cargo da classe escolher fazer o compartilhamento imediatamente ou enfileirar um job para fazê-lo
             for (String handlerClassName : recordsByHandler.keySet()) {
-                executeHandlerSharing(handlerClassName, recordsByHandler.get(handlerClassName).values());
+                executeHandlerSharing(handlerClassName, recordsByHandler.get(handlerClassName).values(), operationType);
             }
         }
     }
@@ -110,7 +112,7 @@ public inherited sharing class RecordSharingService {
         return sharingFormula;
     }
 
-    private static void executeHandlerSharing(String handlerClassName, List<SObject> recordsToShare) {
+    private static void executeHandlerSharing(String handlerClassName, List<SObject> recordsToShare, String operationType) {
         Type handlerType = Type.forName(handlerClassName);
         if (handlerType == null) {
             System.debug('Apex Class not found: ' + handlerClassName);
@@ -118,6 +120,6 @@ public inherited sharing class RecordSharingService {
         }
 
         ISharingHandler handler = (ISharingHandler) handlerType.newInstance();
-        handler.executeSharing(recordsToShare);
+        handler.executeSharing(recordsToShare, operationType);
     }
 }
