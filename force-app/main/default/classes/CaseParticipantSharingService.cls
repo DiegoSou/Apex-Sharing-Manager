@@ -4,21 +4,15 @@ public without sharing class CaseParticipantSharingService implements RecordShar
     // RecordSharingService.ISharingHandler methods
     //
 
-    public void executeSharing(List<CaseParticipant__c> records) {
-        List<CaseParticipant__c> recordsDeletedSharing = new List<CaseParticipant__c>();
-        List<CaseParticipant__c> recordsUpdatedSharing = new List<CaseParticipant__c>();
-
-        for (CaseParticipant__c participant : records) {
-            if (participant.IsDeleted) {
-                recordsDeletedSharing.add(participant);
-                continue;
+    public void executeSharing(List<CaseParticipant__c> records, String operationType) {
+        switch on operationType {
+            when  'AFTER_DELETE' {
+                deleteSharing(records);
             }
-            
-            recordsUpdatedSharing.add(participant);
+            when 'AFTER_INSERT', 'AFTER_UPDATE' {
+                updateSharing(records);
+            }
         }
-
-        deleteSharing(recordsDeletedSharing);
-        updateSharing(recordsUpdatedSharing);
     }
 
     //
@@ -49,7 +43,7 @@ public without sharing class CaseParticipantSharingService implements RecordShar
             FROM CaseShare 
             WHERE CaseId IN :viewAccessCaseIds 
             AND UserOrGroupId IN :viewAccessUserOrGroupIds 
-            AND CaseAccessLevel = 'View'
+            AND CaseAccessLevel = 'Read'
             AND RowCause = 'Manual'
         ];
 
@@ -86,7 +80,7 @@ public without sharing class CaseParticipantSharingService implements RecordShar
             newSharing.add(
                 new CaseShare(
                     RowCause = 'Manual',
-                    CaseAccessLevel = caseParticipant.Role__c == 'Viewer' ? 'View' : 'Edit',
+                    CaseAccessLevel = caseParticipant.Role__c == 'Viewer' ? 'Read' : 'Edit',
                     CaseId = caseParticipant.Case__c,
                     UserOrGroupId = caseParticipant.User__c
                 )
