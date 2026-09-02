@@ -2,16 +2,15 @@ public inherited sharing class RecordSharingService {
     
     // Interface comum entre as handlers
     public interface ISharingHandler {
-        void executeSharing(List<SObject> records, String operationType);
+        void executeSharing(List<SObject> records);
     }
 
     /**
      * Método principal que recebe SObjects e faz o roteamento
      * @param records Lista de registros que foram atualizados e devem ser enviados para o serviço de compartilhamento.
-     * @param operationType Opcional. Serve para o serviço de compartilhamento saber qual operação deve fazer: 'INSERT', 'UPDATE', 'DELETE', etc, ou um valor personalizado que a service reconheça.
      */
-    public static void routeToSharingConfigs(List<SObject> records, String operationType) {
-        if (records == null || records.isEmpty()) return;
+    public static void routeToSharingConfigs(List<SObject> records) {
+        if (records == null || records.isEmpty() || Trigger.isBefore) return;
 
         // 1. Agrupar os registros por SObjectType
         Map<String, List<SObject>> recordsByType = getMapSObjectRecordsByType(records);
@@ -36,7 +35,7 @@ public inherited sharing class RecordSharingService {
                 // Instanciar o avaliador de fórmula dinâmico do Salesforce
                 FormulaEval.FormulaInstance sharingFormula;
                 try {
-                    sharingFormula = buildSharingFormulaInstance(typeConfig);
+                    sharingFormula = buildSharingFormulaInstance(typeConfig, Trigger.operationType.toString());
                 } catch (Exception e) {
                     System.debug('Error building formula: ' + typeConfig.DeveloperName + ': ' + e.getMessage());
                     continue; // Pula essa regra se a fórmula for inválida
@@ -66,7 +65,7 @@ public inherited sharing class RecordSharingService {
             // 4. Instanciar as classes que fazem o compartilhamento
             // Fica a cargo da classe escolher fazer o compartilhamento imediatamente ou enfileirar um job para fazê-lo
             for (String handlerClassName : recordsByHandler.keySet()) {
-                executeHandlerSharing(handlerClassName, recordsByHandler.get(handlerClassName).values(), operationType);
+                executeHandlerSharing(handlerClassName, recordsByHandler.get(handlerClassName).values());
             }
         }
     }
@@ -102,17 +101,30 @@ public inherited sharing class RecordSharingService {
         return configsByType;
     }
 
-    private static FormulaEval.FormulaInstance buildSharingFormulaInstance(Service_Sharing_Config__mdt metadataConfig) {
+    /**
+     * @description Helper method to create a formula evaluation instance using the text Formula Field from metadataConfig
+     * @param metadataConfig The Service_Sharing_Config__mdt record which contains the formula
+     * @param operationType Useful to determine if the service has been called from trigger context and substitute mentions to context variables
+     */
+    private static FormulaEval.FormulaInstance buildSharingFormulaInstance(Service_Sharing_Config__mdt metadataConfig, String operationType) {
+        
+        // replaces context variables
+        String evaluationFormula = metadataConfig.EvaluationFormula__c
+            .replaceAll('AFTER_INSERT', operationType == 'AFTER_INSERT' ? 'TRUE' : 'FALSE')
+            .replaceAll('AFTER_UPDATE', operationType == 'AFTER_UPDATE' ? 'TRUE' : 'FALSE')
+            .replaceAll('AFTER_DELETE', operationType == 'AFTER_DELETE' ? 'TRUE' : 'FALSE')
+            .replaceAll('AFTER_UNDELETE', operationType == 'AFTER_UNDELETE' ? 'TRUE' : 'FALSE');
+        
         FormulaEval.FormulaInstance sharingFormula = Formula.builder()
             .withReturnType(FormulaEval.FormulaReturnType.BOOLEAN)
             .withType(Schema.getGlobalDescribe().get(metadataConfig.SObjectAPIName__c))
-            .withFormula(metadataConfig.EvaluationFormula__c)
+            .withFormula(evaluationFormula)
             .build(); 
 
         return sharingFormula;
     }
 
-    private static void executeHandlerSharing(String handlerClassName, List<SObject> recordsToShare, String operationType) {
+    private static void executeHandlerSharing(String handlerClassName, List<SObject> recordsToShare) {
         Type handlerType = Type.forName(handlerClassName);
         if (handlerType == null) {
             System.debug('Apex Class not found: ' + handlerClassName);
@@ -120,6 +132,6 @@ public inherited sharing class RecordSharingService {
         }
 
         ISharingHandler handler = (ISharingHandler) handlerType.newInstance();
-        handler.executeSharing(recordsToShare, operationType);
+        handler.executeSharing(recordsToShare);
     }
 }
